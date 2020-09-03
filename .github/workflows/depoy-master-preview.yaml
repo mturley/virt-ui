@@ -24,4 +24,4 @@ jobs:
       - name: Install Surge
         run: npm install -g surge
       - name: Deploy to Surge
-        run: surge ./dist/ konveyor-virt-ui-preview.surge.sh --token ${{ secrets.SURGE_TOKEN }}
+        run: surge ./dist/ konveyor-virt-ui-preview.surge.sh --token 62bd7a07b9bf812ff8d3ea91ccd2dc2f

@@ -1,6 +1,7 @@
 import { FormGroupProps, TextInputProps } from '@patternfly/react-core';
 import * as React from 'react';
 import * as yup from 'yup';
+import { useDebounce } from 'use-debounce';
 import equal from 'fast-deep-equal';
 
 export interface IFormField<T> {
@@ -24,6 +25,11 @@ type FormFields<FormValues> = {
 type ValidatedFormFields<FormValues> = {
   [key in keyof FormValues]: IValidatedFormField<FormValues[key]>;
 };
+
+interface IFormStateOptions {
+  yupOptions?: yup.ValidateOptions;
+  debounceDuration?: number;
+}
 
 export interface IFormState<FormValues> {
   fields: ValidatedFormFields<FormValues>;
@@ -57,8 +63,11 @@ export const useFormField = <T>(
 // TypeScript can infer it from the arguments we pass to each useFormField!
 export const useFormState = <FormValues>(
   fields: FormFields<FormValues>,
-  yupOptions: yup.ValidateOptions = {}
+  options?: IFormStateOptions
 ): IFormState<FormValues> => {
+  const yupOptions = options?.yupOptions || {};
+  const debounceDuration = options?.debounceDuration || 5;
+
   const fieldKeys = Object.keys(fields) as (keyof FormValues)[];
   const values: FormValues = fieldKeys.reduce(
     (newObj, key) => ({ ...newObj, [key]: fields[key].value }),
@@ -82,22 +91,28 @@ export const useFormState = <FormValues>(
   // Memoize the validation, only recompute if the field values changed
   const [validationError, setValidationError] = React.useState<yup.ValidationError | null>(null);
   const [hasRunInitialValidation, setHasRunInitialValidation] = React.useState(false);
-  const lastValuesRef = React.useRef(values);
+  const [debouncedValues] = useDebounce(values, debounceDuration); // Wait 20ms for the user to finish typing before validating
+  const lastValuesRef = React.useRef(debouncedValues);
   React.useEffect(() => {
-    if (formSchema && (!hasRunInitialValidation || !equal(lastValuesRef.current, values))) {
+    if (
+      formSchema &&
+      (!hasRunInitialValidation || !equal(lastValuesRef.current, debouncedValues))
+    ) {
+      console.log('Running validation!');
       setHasRunInitialValidation(true);
-      lastValuesRef.current = values;
+      lastValuesRef.current = debouncedValues;
       formSchema
-        .validate(values, { abortEarly: false, ...yupOptions })
+        .validate(debouncedValues, { abortEarly: false, ...yupOptions })
         .then(() => setValidationError(null))
         .catch((e) => {
           const newRootError = e as yup.ValidationError;
           if (!validationError || !equal(validationError.errors, newRootError.errors)) {
             setValidationError(newRootError);
+            console.log('validation done!');
           }
         });
     }
-  }, [formSchema, hasRunInitialValidation, validationError, values, yupOptions]);
+  }, [debouncedValues, formSchema, hasRunInitialValidation, validationError, yupOptions]);
 
   type ErrorsByField = { [key in keyof FormValues]: yup.ValidationError };
   const errorsByField =

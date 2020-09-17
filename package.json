@@ -78,6 +78,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-last-location": "^2.0.1",
+    "use-debounce": "^4.0.0",
     "yup": "^0.29.3"
   }
 }

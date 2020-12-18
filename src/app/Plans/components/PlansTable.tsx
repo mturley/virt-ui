@@ -220,7 +220,11 @@ const PlansTable: React.FunctionComponent<IPlansTableProps> = ({
             <StatusCondition status={plan.status} />
           ) : (
             <Progress
-              title={title}
+              title={
+                ((
+                  <StatusCondition status={plan.status} replaceLabel={title} labelOnly />
+                ) as unknown) as string
+              }
               value={statusValue}
               label={statusMessage}
               valueText={statusMessage}

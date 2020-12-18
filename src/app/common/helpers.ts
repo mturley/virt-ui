@@ -27,6 +27,9 @@ export const getMostSeriousCondition = (conditions: IStatusCondition[]): string 
   if (findConditionByCategory(conditions, StatusCategoryType.Error)) {
     return StatusCategoryType.Error;
   }
+  if (hasCondition(conditions, PlanStatusType.Failed)) {
+    return PlanStatusType.Failed;
+  }
   if (
     findConditionByCategory(conditions, StatusCategoryType.Warn) &&
     !hasCondition(conditions, PlanStatusType.Ready)

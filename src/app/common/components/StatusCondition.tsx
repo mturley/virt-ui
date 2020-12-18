@@ -8,11 +8,15 @@ import { Button, Popover } from '@patternfly/react-core';
 interface IStatusConditionProps {
   status?: { conditions?: IStatusCondition[] };
   unknownFallback?: React.ReactNode;
+  labelOnly?: boolean;
+  replaceLabel?: string | null;
 }
 
 const StatusCondition: React.FunctionComponent<IStatusConditionProps> = ({
   status = {},
   unknownFallback = null,
+  labelOnly = false,
+  replaceLabel = null,
 }: IStatusConditionProps) => {
   const getStatusType = (severity: string) => {
     if (status) {
@@ -25,8 +29,11 @@ const StatusCondition: React.FunctionComponent<IStatusConditionProps> = ({
       if (severity === StatusCategoryType.Critical || severity === StatusCategoryType.Error) {
         return StatusType.Error;
       }
+      if (severity === StatusCategoryType.Warn) {
+        return StatusType.Warning;
+      }
     }
-    return StatusType.Warning;
+    return StatusType.Info;
   };
 
   if (status) {
@@ -38,13 +45,19 @@ const StatusCondition: React.FunctionComponent<IStatusConditionProps> = ({
     }
 
     let label = mostSeriousCondition;
-    if (mostSeriousCondition === StatusCategoryType.Required) {
+    if (replaceLabel) {
+      label = replaceLabel;
+    } else if (mostSeriousCondition === StatusCategoryType.Required) {
       label = 'Not ready';
     }
 
-    const icon = <StatusIcon status={getStatusType(mostSeriousCondition)} label={label} />;
+    const summary = labelOnly ? (
+      <>{label}</>
+    ) : (
+      <StatusIcon status={getStatusType(mostSeriousCondition)} label={label} />
+    );
 
-    if (conditions.length === 0) return icon;
+    if (conditions.length === 0) return summary;
 
     return (
       <Popover
@@ -53,6 +66,7 @@ const StatusCondition: React.FunctionComponent<IStatusConditionProps> = ({
           <>
             {conditions.map((condition) => {
               const severity = getMostSeriousCondition([condition]);
+              console.log(condition.message, { severity });
               return (
                 <StatusIcon
                   key={condition.message}
@@ -65,7 +79,7 @@ const StatusCondition: React.FunctionComponent<IStatusConditionProps> = ({
         }
       >
         <Button variant="link" isInline>
-          {icon}
+          {summary}
         </Button>
       </Popover>
     );

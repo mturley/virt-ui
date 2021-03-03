@@ -63,10 +63,7 @@ const VMStatusTable: React.FunctionComponent<IVMStatusTableProps> = ({
         },
         {
           title: (
-            <TickingElapsedTime
-              start={step.started}
-              end={step.completed || (status.error ? status.completed : undefined)}
-            />
+            <TickingElapsedTime start={step.started} end={step.completed || status.completed} />
           ),
         },
         {

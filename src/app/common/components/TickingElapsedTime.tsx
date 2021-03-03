@@ -30,6 +30,8 @@ const TickingElapsedTime: React.FunctionComponent<ITickingElapsedTimeProps> = ({
     return stopTicking;
   }, [end]);
 
+  if (!start) return null;
+
   return <>{formatDuration(start, endTime)}</>;
 };
 

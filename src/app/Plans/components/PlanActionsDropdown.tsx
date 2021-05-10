@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { Dropdown, KebabToggle, DropdownItem, DropdownPosition } from '@patternfly/react-core';
+import {
+  Dropdown,
+  KebabToggle,
+  DropdownItem,
+  DropdownPosition,
+  Modal,
+  Button,
+} from '@patternfly/react-core';
 import { useHistory } from 'react-router-dom';
 
 import { IPlan } from '@app/queries/types';
@@ -9,6 +16,7 @@ import { useClusterProvidersQuery, useDeletePlanMutation } from '@app/queries';
 import ConfirmModal from '@app/common/components/ConfirmModal';
 import ConditionalTooltip from '@app/common/components/ConditionalTooltip';
 import { areAssociatedProvidersReady } from '@app/queries/helpers';
+import PlanDetails from './PlanDetails';
 
 interface IPlansActionDropdownProps {
   plan: IPlan;
@@ -19,6 +27,7 @@ const PlansActionsDropdown: React.FunctionComponent<IPlansActionDropdownProps> =
 }: IPlansActionDropdownProps) => {
   const [kebabIsOpen, setKebabIsOpen] = React.useState(false);
   const [isDeleteModalOpen, toggleDeleteModal] = React.useReducer((isOpen) => !isOpen, false);
+  const [isDetailsModalOpen, toggleDetailsModal] = React.useReducer((isOpen) => !isOpen, false);
   const [deletePlan, deletePlanResult] = useDeletePlanMutation(toggleDeleteModal);
   const history = useHistory();
   const conditions = plan.status?.conditions || [];
@@ -82,6 +91,15 @@ const PlansActionsDropdown: React.FunctionComponent<IPlansActionDropdownProps> =
               Delete
             </DropdownItem>
           </ConditionalTooltip>,
+          <DropdownItem
+            key="Details"
+            onClick={() => {
+              setKebabIsOpen(false);
+              toggleDetailsModal();
+            }}
+          >
+            View details
+          </DropdownItem>,
         ]}
         position={DropdownPosition.right}
       />
@@ -100,6 +118,19 @@ const PlansActionsDropdown: React.FunctionComponent<IPlansActionDropdownProps> =
         }
         errorText="Error deleting plan"
       />
+      <Modal
+        variant="medium"
+        title="Plans details"
+        isOpen={isDetailsModalOpen}
+        onClose={toggleDetailsModal}
+        actions={[
+          <Button key="close" variant="primary" onClick={toggleDetailsModal}>
+            Close
+          </Button>,
+        ]}
+      >
+        <PlanDetails plan={plan} />
+      </Modal>
     </>
   );
 };

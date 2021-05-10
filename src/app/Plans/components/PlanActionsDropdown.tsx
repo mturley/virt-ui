@@ -120,7 +120,7 @@ const PlansActionsDropdown: React.FunctionComponent<IPlansActionDropdownProps> =
       />
       <Modal
         variant="medium"
-        title="Plans details"
+        title="Plan details"
         isOpen={isDetailsModalOpen}
         onClose={toggleDetailsModal}
         actions={[

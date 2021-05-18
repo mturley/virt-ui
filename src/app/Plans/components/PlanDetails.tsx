@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { Grid, GridItem, Popover, Button, List } from '@patternfly/react-core';
+import { Grid, GridItem, Popover, Button, List, Text } from '@patternfly/react-core';
 import spacing from '@patternfly/react-styles/css/utilities/Spacing/spacing';
+
 import MappingDetailView from '@app/Mappings/components/MappingDetailView';
 import { IPlan, MappingType, POD_NETWORK } from '@app/queries/types';
 import { useMappingsQuery } from '@app/queries';
 import { usePausedPollingEffect } from '@app/common/context';
+import MappingStatus from '@app/Mappings/components/MappingStatus';
 
 interface IPlanDetailsProps {
   plan: IPlan;
@@ -27,6 +29,8 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
       (mapping) => mapping.metadata.name === plan.spec.map.storage.name
     ) || null;
 
+  console.log(plan);
+  console.log(storageMapping);
   return (
     <Grid hasGutter className={`${spacing.mtSm} ${spacing.mbMd}`}>
       <GridItem md={12}></GridItem>
@@ -88,13 +92,27 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
         </Popover>
       </GridItem>
       <GridItem md={3} id="network-mapping-label">
-        Network mapping
+        Network mapping{' '}
+        {networkMapping ? (
+          <MappingStatus
+            mappingType={MappingType.Network}
+            mapping={networkMapping}
+            isLabel={false}
+          />
+        ) : null}
       </GridItem>
       <GridItem md={9} id="review-network-mapping" aria-labelledby="network-mapping-label">
         <MappingDetailView mappingType={MappingType.Network} mapping={networkMapping} />
       </GridItem>
       <GridItem md={3} id="storage-mapping-label">
-        Storage mapping
+        Storage mapping{' '}
+        {storageMapping ? (
+          <MappingStatus
+            mappingType={MappingType.Storage}
+            mapping={storageMapping}
+            isLabel={false}
+          />
+        ) : null}
       </GridItem>
       <GridItem md={9} id="review-storage-mapping" aria-labelledby="storage-mapping-label">
         <MappingDetailView mappingType={MappingType.Storage} mapping={storageMapping} />

@@ -3,7 +3,7 @@ import { Grid, GridItem, Popover, Button, List, Text } from '@patternfly/react-c
 import spacing from '@patternfly/react-styles/css/utilities/Spacing/spacing';
 
 import MappingDetailView from '@app/Mappings/components/MappingDetailView';
-import { IPlan, MappingType, POD_NETWORK } from '@app/queries/types';
+import { IMetaObjectMeta, IPlan, MappingType, POD_NETWORK } from '@app/queries/types';
 import { useMappingsQuery } from '@app/queries';
 import { usePausedPollingEffect } from '@app/common/context';
 import MappingStatus from '@app/Mappings/components/MappingStatus';
@@ -16,17 +16,15 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
   usePausedPollingEffect();
 
   const networkMappings = useMappingsQuery(MappingType.Network);
-
   const networkMapping =
     networkMappings.data?.items.find(
-      (mapping) => mapping.metadata.name === plan.spec.map.network.name
+      (mapping) => (mapping.metadata as IMetaObjectMeta).name === plan.spec.map.network.name
     ) || null;
 
   const storageMappings = useMappingsQuery(MappingType.Storage);
-
   const storageMapping =
     storageMappings.data?.items.find(
-      (mapping) => mapping.metadata.name === plan.spec.map.storage.name
+      (mapping) => (mapping.metadata as IMetaObjectMeta).name === plan.spec.map.storage.name
     ) || null;
 
   return (

@@ -29,8 +29,6 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
       (mapping) => mapping.metadata.name === plan.spec.map.storage.name
     ) || null;
 
-  console.log(plan);
-  console.log(storageMapping);
   return (
     <Grid hasGutter className={`${spacing.mtSm} ${spacing.mbMd}`}>
       <GridItem md={12}></GridItem>

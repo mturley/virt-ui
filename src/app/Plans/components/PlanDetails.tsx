@@ -118,6 +118,22 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
       </GridItem>
       <GridItem md={9} id="review-migration-type" aria-labelledby="migration-type-label">
         {plan.spec.warm ? 'warm' : 'cold'}
+      </GridItem>{' '}
+      <GridItem md={9} id="review-plan-hooks" aria-labelledby="migration-hooks-label">
+        <div>
+          <Grid>
+            <GridItem span={5} id="migration-plan-hooks-definition-label">
+              <label className="pf-c-form__label">Definition</label>
+              {plan.spec.vms.map((map) => {
+                return <Text>map.hooks?</Text>;
+              })}
+            </GridItem>
+            <GridItem span={2} className="migration-hooks-align" />
+            <GridItem span={5} id="migration-plan-hooks-steps-label">
+              <label className="pf-c-form__label">Migration step</label>
+            </GridItem>
+          </Grid>
+        </div>
       </GridItem>
     </Grid>
   );

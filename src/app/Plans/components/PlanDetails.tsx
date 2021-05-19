@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { Grid, GridItem, Popover, Button, List, Text } from '@patternfly/react-core';
 import spacing from '@patternfly/react-styles/css/utilities/Spacing/spacing';
+import { StatusIcon } from '@konveyor/lib-ui';
 
 import MappingDetailView from '@app/Mappings/components/MappingDetailView';
-import { IMetaObjectMeta, IPlan, MappingType, POD_NETWORK } from '@app/queries/types';
-import { useMappingsQuery } from '@app/queries';
+import { IMetaObjectMeta, IPlan, IVMwareVM, MappingType, POD_NETWORK } from '@app/queries/types';
+import { useInventoryProvidersQuery, useMappingsQuery, useVMwareVMsQuery } from '@app/queries';
 import { usePausedPollingEffect } from '@app/common/context';
 import MappingStatus from '@app/Mappings/components/MappingStatus';
-
+import { warmCriticalConcerns, someVMHasConcern } from './Wizard/helpers';
 interface IPlanDetailsProps {
   plan: IPlan;
 }
@@ -26,6 +27,19 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
     storageMappings.data?.items.find(
       (mapping) => (mapping.metadata as IMetaObjectMeta).name === plan.spec.map.storage.name
     ) || null;
+
+  const providers = useInventoryProvidersQuery();
+  const provider =
+    providers.data?.vsphere.find((provider) => provider.name === plan.spec.provider.source.name) ||
+    null;
+
+  const vms = useVMwareVMsQuery(provider);
+  const selectedVMs =
+    vms.data?.filter((vm) => plan.spec.vms.find((planVM) => planVM.id === vm.id)) || [];
+
+  const warmCriticalConcernsFound = plan.spec.warm
+    ? warmCriticalConcerns.filter((label) => someVMHasConcern(selectedVMs as IVMwareVM[], label))
+    : [];
 
   return (
     <Grid hasGutter className={`${spacing.mtSm} ${spacing.mbMd}`}>
@@ -114,22 +128,34 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
         <MappingDetailView mappingType={MappingType.Storage} mapping={storageMapping} />
       </GridItem>
       <GridItem md={3} id="migration-type-label">
-        Migration type
+        Migration type{' '}
+        {warmCriticalConcernsFound.length > 0 ? (
+          <Popover
+            hasAutoWidth
+            bodyContent="Warm migration will fail for one or more VMs because of the following conditions:"
+          >
+            <Button variant="link" isInline>
+              <StatusIcon status="Error" />
+            </Button>
+          </Popover>
+        ) : null}
       </GridItem>
       <GridItem md={9} id="review-migration-type" aria-labelledby="migration-type-label">
         {plan.spec.warm ? 'warm' : 'cold'}
-      </GridItem>{' '}
+      </GridItem>
+      <GridItem md={3} id="migration-type-label">
+        Hooks
+      </GridItem>
       <GridItem md={9} id="review-plan-hooks" aria-labelledby="migration-hooks-label">
         <div>
           <Grid>
             <GridItem span={5} id="migration-plan-hooks-definition-label">
               <label className="pf-c-form__label">Definition</label>
-              {plan.spec.vms.map((map) => {
-                return <Text>map.hooks?</Text>;
-              })}
+              {plan.spec.vms[0].hooks}
             </GridItem>
             <GridItem span={2} className="migration-hooks-align" />
             <GridItem span={5} id="migration-plan-hooks-steps-label">
+              {plan.spec.vms[0].hooks}
               <label className="pf-c-form__label">Migration step</label>
             </GridItem>
           </Grid>

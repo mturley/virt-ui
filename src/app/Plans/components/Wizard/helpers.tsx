@@ -277,6 +277,8 @@ export const filterSourcesBySelectedVMs = (
   return availableSources.filter((source) => sourceIds.includes(source.id));
 };
 
+export const warmCriticalConcerns = ['Changed Block Tracking (CBT) not enabled'];
+
 export const getMostSevereVMConcern = (vm: IVMwareVM): IVMwareVMConcern | null => {
   if (!vm.concerns || vm.concerns.length === 0) {
     return null;

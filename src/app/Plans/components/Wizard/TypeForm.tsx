@@ -3,10 +3,8 @@ import { List, ListItem, Radio } from '@patternfly/react-core';
 import spacing from '@patternfly/react-styles/css/utilities/Spacing/spacing';
 import { PlanWizardFormState } from './PlanWizard';
 import { IVMwareVM } from '@app/queries/types';
-import { someVMHasConcern } from './helpers';
+import { warmCriticalConcerns, someVMHasConcern } from './helpers';
 import { StatusIcon } from '@konveyor/lib-ui';
-
-const warmCriticalConcerns = ['Changed Block Tracking (CBT) not enabled'];
 
 interface ITypeFormProps {
   form: PlanWizardFormState['type'];

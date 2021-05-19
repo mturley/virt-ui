@@ -155,12 +155,12 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
           <Grid>
             <GridItem span={5} id="migration-plan-hooks-definition-label">
               <label className="pf-c-form__label">Definition</label>
-              {plan.spec.vms[0].hooks}
+              {plan.spec.vms[0].hooks?.map((hook) => hook.hook)}
             </GridItem>
             <GridItem span={2} className="migration-hooks-align" />
             <GridItem span={5} id="migration-plan-hooks-steps-label">
-              {plan.spec.vms[0].hooks}
               <label className="pf-c-form__label">Migration step</label>
+              {plan.spec.vms[0].hooks?.map((hook) => hook.step)}
             </GridItem>
           </Grid>
         </div>

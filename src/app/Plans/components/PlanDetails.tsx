@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Grid, GridItem, Popover, Button, List, Text } from '@patternfly/react-core';
+import { Grid, GridItem, Popover, Button, List, Text, ListItem } from '@patternfly/react-core';
 import spacing from '@patternfly/react-styles/css/utilities/Spacing/spacing';
 import { StatusIcon } from '@konveyor/lib-ui';
 
@@ -136,7 +136,18 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
         {warmCriticalConcernsFound.length > 0 ? (
           <Popover
             hasAutoWidth
-            bodyContent="Warm migration will fail for one or more VMs because of the following conditions:"
+            bodyContent={
+              <>
+                <Text>
+                  Warm migration will fail for one or more VMs because of the following conditions:
+                </Text>
+                <List className={`${spacing.mtSm} ${spacing.mlMd}`}>
+                  {warmCriticalConcernsFound.map((label) => (
+                    <ListItem key={label}>{label}</ListItem>
+                  ))}
+                </List>
+              </>
+            }
           >
             <Button variant="link" isInline>
               <StatusIcon status="Error" className={spacing.mlXs} />

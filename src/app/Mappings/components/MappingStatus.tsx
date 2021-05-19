@@ -13,6 +13,7 @@ interface IMappingStatusProps {
   mapping: Mapping;
   isLabel?: boolean;
   disableOk?: boolean;
+  className?: string;
 }
 
 const MappingStatus: React.FunctionComponent<IMappingStatusProps> = ({
@@ -20,6 +21,7 @@ const MappingStatus: React.FunctionComponent<IMappingStatusProps> = ({
   mapping,
   isLabel = true,
   disableOk = false,
+  className = '',
 }: IMappingStatusProps) => {
   const { availableSources, availableTargets, queries } = useResourceQueriesForMapping(
     mappingType,
@@ -30,6 +32,7 @@ const MappingStatus: React.FunctionComponent<IMappingStatusProps> = ({
     <StatusIcon
       status={isValid ? 'Ok' : 'Error'}
       label={isLabel ? (isValid ? 'OK' : 'Invalid') : null}
+      className={className}
     />
   );
   return (

@@ -105,6 +105,7 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
         Network mapping{' '}
         {networkMapping ? (
           <MappingStatus
+            className={spacing.mlXs}
             mappingType={MappingType.Network}
             mapping={networkMapping}
             isLabel={false}
@@ -119,6 +120,7 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
         Storage mapping{' '}
         {storageMapping ? (
           <MappingStatus
+            className={spacing.mlXs}
             mappingType={MappingType.Storage}
             mapping={storageMapping}
             isLabel={false}
@@ -137,7 +139,7 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
             bodyContent="Warm migration will fail for one or more VMs because of the following conditions:"
           >
             <Button variant="link" isInline>
-              <StatusIcon status="Error" />
+              <StatusIcon status="Error" className={spacing.mlXs} />
             </Button>
           </Popover>
         ) : null}

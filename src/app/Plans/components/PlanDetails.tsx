@@ -108,6 +108,7 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
             mappingType={MappingType.Network}
             mapping={networkMapping}
             isLabel={false}
+            disableOk={true}
           />
         ) : null}
       </GridItem>
@@ -121,6 +122,7 @@ const PlanDetails: React.FunctionComponent<IPlanDetailsProps> = ({ plan }: IPlan
             mappingType={MappingType.Storage}
             mapping={storageMapping}
             isLabel={false}
+            disableOk={true}
           />
         ) : null}
       </GridItem>

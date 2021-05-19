@@ -12,12 +12,14 @@ interface IMappingStatusProps {
   mappingType: MappingType;
   mapping: Mapping;
   isLabel?: boolean;
+  disableOk?: boolean;
 }
 
 const MappingStatus: React.FunctionComponent<IMappingStatusProps> = ({
   mappingType,
   mapping,
   isLabel = true,
+  disableOk = false,
 }: IMappingStatusProps) => {
   const { availableSources, availableTargets, queries } = useResourceQueriesForMapping(
     mappingType,
@@ -45,7 +47,9 @@ const MappingStatus: React.FunctionComponent<IMappingStatusProps> = ({
       }}
     >
       {isValid ? (
-        icon
+        disableOk ? null : (
+          icon
+        )
       ) : (
         <Popover
           hasAutoWidth

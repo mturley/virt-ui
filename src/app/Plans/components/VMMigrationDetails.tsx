@@ -63,6 +63,7 @@ import ConfirmModal from '@app/common/components/ConfirmModal';
 import { getWarmPlanState } from './helpers';
 import VMStatusPrecopyTable from './VMStatusPrecopyTable';
 import VMWarmCopyStatus, { getWarmVMCopyState } from './VMWarmCopyStatus';
+import { LONG_LOADING_MESSAGE } from '@app/queries/constants';
 
 export interface IPlanMatchParams {
   url: string;
@@ -330,6 +331,7 @@ const VMMigrationDetails: React.FunctionComponent = () => {
             'Error loading VMs',
           ]}
           errorsInline={false}
+          emptyStateBody={LONG_LOADING_MESSAGE}
         >
           <Card>
             <CardBody>

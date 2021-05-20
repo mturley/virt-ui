@@ -57,6 +57,7 @@ import { ResolvedQueries } from '@app/common/components/ResolvedQuery';
 import { PlanHookInstance } from './PlanAddEditHookModal';
 
 import './PlanWizard.css';
+import { LONG_LOADING_MESSAGE } from '@app/queries/constants';
 
 const useMappingFormState = (mappingsQuery: QueryResult<IKubeList<Mapping>>) => {
   const isSaveNewMapping = useFormField(false, yup.boolean().required());
@@ -392,6 +393,7 @@ const PlanWizard: React.FunctionComponent = () => {
       ]}
       errorsInline={false}
       className={spacing.mMd}
+      emptyStateBody={LONG_LOADING_MESSAGE}
     >
       {!isDonePrefilling ? (
         <LoadingEmptyState />

@@ -39,6 +39,7 @@ import { FilterToolbar, FilterType, FilterCategory } from '@app/common/component
 import { ResolvedQueries } from '@app/common/components/ResolvedQuery';
 import VMConcernsIcon from './VMConcernsIcon';
 import VMConcernsDescription from './VMConcernsDescription';
+import { LONG_LOADING_MESSAGE } from '@app/queries/constants';
 
 interface ISelectVMsFormProps {
   form: PlanWizardFormState['selectVMs'];
@@ -275,7 +276,7 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
         'Error loading VMware VM tree data',
         'Error loading VMs',
       ]}
-      emptyStateBody="For large environments, this may take several seconds."
+      emptyStateBody={LONG_LOADING_MESSAGE}
       forceLoadingState={!availableVMs}
     >
       {(availableVMs || []).length === 0 ? (

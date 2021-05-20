@@ -19,6 +19,13 @@ export const getWarmVMCopyState = (vmStatus: IVMStatus): IWarmVMCopyState => {
       label: 'Failed',
     };
   }
+  if (vmStatus.completed) {
+    return {
+      state: 'Idle',
+      status: 'Ok',
+      label: 'Complete',
+    };
+  }
   if (!vmStatus.warm || (vmStatus.warm.precopies || []).length === 0) {
     return {
       state: 'Starting',

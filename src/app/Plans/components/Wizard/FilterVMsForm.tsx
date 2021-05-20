@@ -15,6 +15,7 @@ import { PlanWizardFormState } from './PlanWizard';
 
 import { ResolvedQueries } from '@app/common/components/ResolvedQuery';
 import { usePausedPollingEffect } from '@app/common/context';
+import { LONG_LOADING_MESSAGE } from '@app/queries/constants';
 
 interface IFilterVMsFormProps {
   form: PlanWizardFormState['filterVMs'];
@@ -92,7 +93,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
       <ResolvedQueries
         results={[vmsQuery, treeQuery]}
         errorTitles={['Error loading VMs', 'Error loading VMware tree data']}
-        emptyStateBody="For large environments, this may take several seconds."
+        emptyStateBody={LONG_LOADING_MESSAGE}
       >
         <TreeView
           data={filterAndConvertVMwareTree(

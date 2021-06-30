@@ -1,4 +1,3 @@
-// TODO make this a string union
 export enum InventoryTreeType {
   Cluster = 'Cluster',
   VM = 'VM',

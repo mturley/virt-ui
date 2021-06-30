@@ -86,11 +86,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     if (!treeQuery.data) return null;
     const { treeType } = form.values;
     const { isItemSelected, selectedItems } = treeSelection;
-    const selectedDescendants = [
-      node,
-      // TODO maybe the IndexedTree should just have a helper for this
-      ...(treeQuery.data.descendantsBySelfLink[node.object?.selfLink || ''] || []),
-    ].filter(isItemSelected);
+    const selectedDescendants = treeQuery.data.getDescendants(node).filter(isItemSelected);
     const numVMs = getAvailableVMs(
       treeQuery.data,
       selectedDescendants,

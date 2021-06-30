@@ -84,11 +84,12 @@ export const useIsNodeSelectableCallback = (
   );
 
 const areSomeDescendantsSelected = (
+  indexedTree: IndexedTree,
   node: InventoryTree,
   isNodeSelected: (node: InventoryTree) => boolean
 ) => {
   if (isNodeSelected(node)) return true;
-  return node.children?.some((child) => areSomeDescendantsSelected(child, isNodeSelected)) || false;
+  return indexedTree.getDescendants(node).some(isNodeSelected);
 };
 
 const areAllSelectableDescendantsSelected = (
@@ -98,11 +99,7 @@ const areAllSelectableDescendantsSelected = (
   isNodeSelectable: (node: InventoryTree) => boolean
 ) => {
   if (!node.children) return isNodeSelected(node);
-  const selectableDescendants =
-    (node.object &&
-      indexedTree.descendantsBySelfLink[node.object.selfLink]?.filter(isNodeSelectable)) ||
-    [];
-  return isNodeSelected(node) && selectableDescendants.every(isNodeSelected);
+  return indexedTree.getDescendants(node).filter(isNodeSelectable).every(isNodeSelected);
 };
 
 export const isNodeFullyChecked = (
@@ -119,12 +116,13 @@ export const isNodeFullyChecked = (
 };
 
 export const isNodePartiallyChecked = (
+  indexedTree: IndexedTree,
   node: InventoryTree | null,
   isNodeSelected: (node: InventoryTree) => boolean,
   isFullyChecked: boolean
 ): boolean => {
   if (!node) return false;
-  return !isFullyChecked && areSomeDescendantsSelected(node, isNodeSelected);
+  return !isFullyChecked && areSomeDescendantsSelected(indexedTree, node, isNodeSelected);
 };
 
 // Helper for filterAndConvertInventoryTree
@@ -137,7 +135,12 @@ const convertInventoryTreeNode = (
   getNodeBadgeContent: (node: InventoryTree, isRootNode: boolean) => React.ReactNode
 ): TreeViewDataItem => {
   const isFullyChecked = isNodeFullyChecked(indexedTree, node, isNodeSelected, isNodeSelectable);
-  const isPartiallyChecked = isNodePartiallyChecked(node, isNodeSelected, isFullyChecked);
+  const isPartiallyChecked = isNodePartiallyChecked(
+    indexedTree,
+    node,
+    isNodeSelected,
+    isFullyChecked
+  );
   const badge = getNodeBadgeContent(node, false);
   return {
     name: node.object?.name || '',
@@ -204,7 +207,12 @@ export const filterAndConvertInventoryTree = (
 ): TreeViewDataItem[] => {
   if (!indexedTree?.tree) return [];
   const rootNode = indexedTree.tree;
-  const isPartiallyChecked = isNodePartiallyChecked(rootNode, isNodeSelected, areAllSelected);
+  const isPartiallyChecked = isNodePartiallyChecked(
+    indexedTree,
+    rootNode,
+    isNodeSelected,
+    areAllSelected
+  );
   const badge = getNodeBadgeContent(rootNode, true);
   return [
     {
@@ -228,9 +236,6 @@ export const filterAndConvertInventoryTree = (
   ];
 };
 
-export const getDirectVMChildren = (node: InventoryTree): InventoryTree[] =>
-  node.children?.filter((node) => node.kind === 'VM') || [];
-
 // From the flattened selected nodes list, get all the unique VMs.
 const getAllVMChildren = (
   indexedTree: IndexedTree,
@@ -238,6 +243,8 @@ const getAllVMChildren = (
   treeType: InventoryTreeType
 ): InventoryTree[] => {
   if (nodes.length === 0) return [];
+  const getDirectVMChildren = (node: InventoryTree): InventoryTree[] =>
+    node.children?.filter((node) => node.kind === 'VM') || [];
   return Array.from(
     new Set(
       nodes.flatMap((node) => {
@@ -249,12 +256,7 @@ const getAllVMChildren = (
           return getDirectVMChildren(node);
         }
         // Otherwise, we might have VMs under hidden descendants like hosts
-        return [
-          ...getDirectVMChildren(node),
-          ...(indexedTree.descendantsBySelfLink[node.object?.selfLink || ''] || []).flatMap(
-            getDirectVMChildren
-          ),
-        ];
+        return indexedTree.getDescendants(node).flatMap(getDirectVMChildren);
       })
     )
   );

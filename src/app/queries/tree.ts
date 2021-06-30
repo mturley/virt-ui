@@ -23,6 +23,7 @@ export interface IndexedTree<T extends InventoryTree = InventoryTree> {
   vmSelfLinks: string[];
   pathsBySelfLink: Record<string, T[] | undefined>;
   descendantsBySelfLink: Record<string, T[] | undefined>;
+  getDescendants: (node: InventoryTree, includeNode?: boolean) => InventoryTree[];
 }
 
 const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
@@ -53,6 +54,10 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
     vmSelfLinks,
     descendantsBySelfLink,
     pathsBySelfLink,
+    getDescendants: (node: InventoryTree, includeNode = true) => {
+      const descendants = descendantsBySelfLink[node.object?.selfLink || ''] || [];
+      return includeNode ? [node, ...descendants] : descendants;
+    },
   };
 };
 

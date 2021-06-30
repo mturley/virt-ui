@@ -232,8 +232,8 @@ export const getDirectVMChildren = (node: InventoryTree): InventoryTree[] =>
   node.children?.filter((node) => node.kind === 'VM') || [];
 
 // From the flattened selected nodes list, get all the unique VMs.
-// TODO This could maybe use the descendantsBySelfLink?
-export const getAllVMChildren = (
+const getAllVMChildren = (
+  indexedTree: IndexedTree,
   nodes: InventoryTree[],
   treeType: InventoryTreeType
 ): InventoryTree[] => {
@@ -245,22 +245,30 @@ export const getAllVMChildren = (
         if (
           node.kind === 'Folder' ||
           (treeType === InventoryTreeType.VM && node.kind === 'Datacenter')
-        )
+        ) {
           return getDirectVMChildren(node);
+        }
         // Otherwise, we might have VMs under hidden descendants like hosts
-        return [...getDirectVMChildren(node), ...getAllVMChildren(node.children || [], treeType)];
+        return [
+          ...getDirectVMChildren(node),
+          ...(indexedTree.descendantsBySelfLink[node.object?.selfLink || ''] || []).flatMap(
+            getDirectVMChildren
+          ),
+        ];
       })
     )
   );
 };
 
 export const getAvailableVMs = (
+  indexedTree: IndexedTree | undefined,
   selectedTreeNodes: InventoryTree[],
   allVMs: SourceVM[],
   treeType: InventoryTreeType,
   includeExtraVMs: SourceVM[] = []
 ): SourceVM[] => {
-  const treeVMs = getAllVMChildren(selectedTreeNodes, treeType)
+  if (!indexedTree) return [];
+  const treeVMs = getAllVMChildren(indexedTree, selectedTreeNodes, treeType)
     .map((node) => node.object)
     .filter((object) => !!object) as ICommonTreeObject[];
   const vmSelfLinks = treeVMs.map((object) => object.selfLink);
@@ -275,6 +283,7 @@ export const getAvailableVMs = (
 };
 
 // Given a tree and a vm, get a flattened breadcrumb of nodes from the root to the VM.
+// TODO is this necessary at all with the indexed stuff?
 export const findVMTreePath = (node: InventoryTree, vmSelfLink: string): InventoryTree[] | null => {
   if (node.object?.selfLink === vmSelfLink) return [node];
   if (!node.children) return null;

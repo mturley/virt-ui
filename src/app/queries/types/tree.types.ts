@@ -1,3 +1,4 @@
+// TODO make this a string union
 export enum InventoryTreeType {
   Cluster = 'Cluster',
   VM = 'VM',
@@ -15,6 +16,7 @@ interface ICommonTree {
   children: ICommonTree[] | null;
 }
 
+// TODO we should rename this to IClusterHostTree and use the cluster naming everywhere
 export interface IInventoryHostTree extends ICommonTree {
   kind: '' | 'Datacenter' | 'DataCenter' | 'Cluster' | 'Folder' | 'Host' | 'VM';
   children: IInventoryHostTree[] | null;

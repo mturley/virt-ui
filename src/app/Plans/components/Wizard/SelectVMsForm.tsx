@@ -48,7 +48,7 @@ import {
   getVMTreePathInfo,
   vmMatchesConcernFilter,
 } from './helpers';
-import { useInventoryTreeQuery, useSourceVMsQuery } from '@app/queries';
+import { IndexedTree, useInventoryTreeQuery, useSourceVMsQuery } from '@app/queries';
 import TableEmptyState from '@app/common/components/TableEmptyState';
 import { FilterToolbar, FilterType, FilterCategory } from '@app/common/components/FilterToolbar';
 import { ResolvedQueries } from '@app/common/components/ResolvedQuery';
@@ -83,11 +83,20 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
   );
   const vmsQuery = useSourceVMsQuery(sourceProvider);
 
+  const indexedTree: IndexedTree | undefined =
+    treeType === InventoryTreeType.Cluster ? hostTreeQuery.data : vmTreeQuery.data;
+
   // Even if some of the already-selected VMs don't match the filter, include them in the list.
   const selectedVMsOnMount = React.useRef(selectedVMs);
   const availableVMs = useAsyncMemo(
     async () =>
-      getAvailableVMs(selectedTreeNodes, vmsQuery.data || [], treeType, selectedVMsOnMount.current),
+      getAvailableVMs(
+        indexedTree,
+        selectedTreeNodes,
+        vmsQuery.data || [],
+        treeType,
+        selectedVMsOnMount.current
+      ),
     [selectedTreeNodes, vmsQuery.data, treeType]
   );
 

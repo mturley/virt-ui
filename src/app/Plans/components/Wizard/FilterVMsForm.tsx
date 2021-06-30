@@ -83,13 +83,20 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
   ]);
 
   const getNodeBadgeContent = (node: InventoryTree, isRootNode: boolean) => {
+    if (!treeQuery.data) return null;
     const { treeType } = form.values;
     const { isItemSelected, selectedItems } = treeSelection;
     const selectedDescendants = [
       node,
-      ...(treeQuery.data?.descendantsBySelfLink[node.object?.selfLink || ''] || []),
+      // TODO maybe the IndexedTree should just have a helper for this
+      ...(treeQuery.data.descendantsBySelfLink[node.object?.selfLink || ''] || []),
     ].filter(isItemSelected);
-    const numVMs = getAvailableVMs(selectedDescendants, vmsQuery.data || [], treeType).length;
+    const numVMs = getAvailableVMs(
+      treeQuery.data,
+      selectedDescendants,
+      vmsQuery.data || [],
+      treeType
+    ).length;
     const rootNodeSuffix = ` VM${numVMs !== 1 ? 's' : ''}`;
     if (numVMs || isItemSelected(node) || (isRootNode && selectedItems.length > 0)) {
       return `${numVMs}${isRootNode ? rootNodeSuffix : ''}`;

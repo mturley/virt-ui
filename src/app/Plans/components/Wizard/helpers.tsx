@@ -258,13 +258,21 @@ export const getAllVMChildren = (
 export const getAvailableVMs = (
   selectedTreeNodes: InventoryTree[],
   allVMs: SourceVM[],
-  treeType: InventoryTreeType
+  treeType: InventoryTreeType,
+  includeExtraVMs: SourceVM[] = []
 ): SourceVM[] => {
   const treeVMs = getAllVMChildren(selectedTreeNodes, treeType)
     .map((node) => node.object)
     .filter((object) => !!object) as ICommonTreeObject[];
   const vmSelfLinks = treeVMs.map((object) => object.selfLink);
-  return allVMs.filter((vm) => vmSelfLinks.includes(vm.selfLink));
+  return [
+    ...includeExtraVMs,
+    ...allVMs.filter(
+      (vm) =>
+        vmSelfLinks.includes(vm.selfLink) &&
+        !includeExtraVMs.some((extraVM) => vm.id === extraVM.id)
+    ),
+  ];
 };
 
 // Given a tree and a vm, get a flattened breadcrumb of nodes from the root to the VM.
@@ -286,13 +294,12 @@ export interface IVMTreePathInfo {
   folderPathStr: string | null;
 }
 
-// Using the breadcrumbs for the VM in each tree, grab the column values for the Select VMs table.
-export const findVMTreePathInfo = (
-  vmSelfLink: string,
-  hostTree: IInventoryHostTree | null,
-  vmTree: IVMwareFolderTree | null
+// Private helper for getVMTreePathInfoByVM
+const getTreePathInfo = (
+  hostTreePath?: IInventoryHostTree[],
+  vmTreePath?: IVMwareFolderTree[]
 ): IVMTreePathInfo => {
-  if (!hostTree) {
+  if (!hostTreePath) {
     return {
       datacenter: null,
       cluster: null,
@@ -301,10 +308,8 @@ export const findVMTreePathInfo = (
       folderPathStr: null,
     };
   }
-  const hostTreePath = findVMTreePath(hostTree, vmSelfLink);
   let folders: ICommonTreeObject[] = [];
-  if (vmTree) {
-    const vmTreePath = findVMTreePath(vmTree, vmSelfLink);
+  if (vmTreePath) {
     folders =
       (vmTreePath
         ?.filter((node) => !!node && node.kind === 'Folder')
@@ -319,26 +324,37 @@ export const findVMTreePathInfo = (
   };
 };
 
-export interface IVMTreePathInfoByVM {
-  [vmSelfLink: string]: IVMTreePathInfo;
-}
-
-// TODO index this at query load time with one full tree walk
-export const getVMTreePathInfoByVM = (
-  vmSelfLinks: string[],
-  hostTree: IInventoryHostTree | null,
-  vmTree: IVMwareFolderTree | null
-): IVMTreePathInfoByVM | null => {
-  if (vmSelfLinks.length === 0) return null;
-  return vmSelfLinks.reduce(
-    (newObj, vmSelfLink) => ({
-      ...newObj,
-      [vmSelfLink]: findVMTreePathInfo(vmSelfLink, hostTree, vmTree),
-    }),
-    {}
-  );
+export const getTreePathsByVM = <T extends InventoryTree>(rootNode: T) => {
+  const pathsByVM: Record<string, T[] | undefined> = {};
+  const walk = (node: T, ancestors: T[] = []) => {
+    if (node.kind === 'VM' && node.object) {
+      pathsByVM[node.object.selfLink] = [...ancestors, node];
+    }
+    if (node.children) {
+      (node.children as T[]).forEach((childNode) => walk(childNode, [...ancestors, node]));
+    }
+  };
+  walk(rootNode);
+  return pathsByVM;
 };
 
+export const getVMTreePathInfoByVM = (
+  hostTree?: IInventoryHostTree,
+  vmTree?: IVMwareFolderTree
+) => {
+  const hostTreePaths = hostTree ? getTreePathsByVM(hostTree) : {};
+  const vmTreePaths = vmTree ? getTreePathsByVM(vmTree) : {};
+  const allVMSelfLinks = Array.from(
+    new Set([...Object.keys(hostTreePaths), ...Object.keys(vmTreePaths)])
+  );
+  const pathInfoByVM: Record<string, IVMTreePathInfo | undefined> = {};
+  allVMSelfLinks.forEach((vmSelfLink) => {
+    pathInfoByVM[vmSelfLink] = getTreePathInfo(hostTreePaths[vmSelfLink], vmTreePaths[vmSelfLink]);
+  });
+  return pathInfoByVM;
+};
+
+// TODO this can probably reuse treepaths memoized from getTreePathsByVM? it's used with non-VM selfLinks though right?
 export const findMatchingNode = (
   tree: InventoryTree | null,
   vmSelfLink: string

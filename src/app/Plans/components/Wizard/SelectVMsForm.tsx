@@ -47,7 +47,6 @@ import {
   getVMConcernStatusLabel,
   getVMTreePathInfoByVM,
   IVMTreePathInfo,
-  IVMTreePathInfoByVM,
   vmMatchesConcernFilter,
 } from './helpers';
 import { useInventoryTreeQuery, useSourceVMsQuery } from '@app/queries';
@@ -58,6 +57,7 @@ import VMConcernsIcon from './VMConcernsIcon';
 import VMConcernsDescription from './VMConcernsDescription';
 import { LONG_LOADING_MESSAGE } from '@app/queries/constants';
 import { PROVIDER_TYPE_NAMES } from '@app/common/constants';
+import { useAsyncMemo } from 'use-async-memo';
 
 interface ISelectVMsFormProps {
   form: PlanWizardFormState['selectVMs'];
@@ -86,37 +86,19 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
 
   // Even if some of the already-selected VMs don't match the filter, include them in the list.
   const selectedVMsOnMount = React.useRef(selectedVMs);
-  const [availableVMs, setAvailableVMs] = React.useState<SourceVM[] | null>(null);
-  React.useEffect(() => {
-    if (vmsQuery.data) {
-      const filteredVMs = getAvailableVMs(selectedTreeNodes, vmsQuery.data || [], treeType);
-      setAvailableVMs([
-        ...selectedVMsOnMount.current,
-        ...filteredVMs.filter(
-          (vm) => !selectedVMsOnMount.current.some((selectedVM) => vm.id === selectedVM.id)
-        ),
-      ]);
-    }
-  }, [vmsQuery.data, selectedTreeNodes, treeType]);
+  const availableVMs = useAsyncMemo(
+    async () =>
+      getAvailableVMs(selectedTreeNodes, vmsQuery.data || [], treeType, selectedVMsOnMount.current),
+    [selectedTreeNodes, vmsQuery.data, treeType]
+  );
 
-  const [treePathInfoByVM, setTreePathInfoByVM] = React.useState<IVMTreePathInfoByVM | null>(null);
-  React.useEffect(() => {
-    if (
-      (availableVMs || []).length > 0 &&
-      hostTreeQuery.data &&
-      (sourceProvider?.type === 'ovirt' || vmTreeQuery.data) // Only VMware has a VM tree
-    ) {
-      setTreePathInfoByVM(
-        getVMTreePathInfoByVM(
-          availableVMs?.map((vm) => vm.selfLink) || [],
-          hostTreeQuery.data,
-          vmTreeQuery.data || null
-        )
-      );
-    }
-  }, [availableVMs, hostTreeQuery.data, sourceProvider?.type, vmTreeQuery.data]);
+  const treePathInfoByVM = useAsyncMemo(
+    async () => getVMTreePathInfoByVM(hostTreeQuery.data, vmTreeQuery.data),
+    [hostTreeQuery.data, vmTreeQuery.data]
+  );
   const getVMTreeInfo = (vm: SourceVM): IVMTreePathInfo => {
-    if (treePathInfoByVM) return treePathInfoByVM[vm.selfLink];
+    const info = treePathInfoByVM[vm.selfLink];
+    if (info) return info;
     return { datacenter: null, cluster: null, host: null, folders: null, folderPathStr: null };
   };
 

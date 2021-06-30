@@ -11,8 +11,8 @@ import {
 } from '@app/queries/types';
 import {
   filterAndConvertInventoryTree,
-  findMatchingNode,
-  findMatchingNodeAndDescendants,
+  findMatchingSelectableNode,
+  findMatchingSelectableNodeAndDescendants,
   findNodesMatchingSelectedVMs,
   getAvailableVMs,
   getSelectedVMsFromPlan,
@@ -63,7 +63,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
       } else if (vmsQuery.isSuccess && treeQuery.isSuccess) {
         const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery);
         const selectedTreeNodes = findNodesMatchingSelectedVMs(
-          treeQuery.data.tree,
+          treeQuery.data,
           selectedVMs,
           isNodeSelectable
         );
@@ -148,9 +148,10 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
             if (treeViewItem.id === 'converted-root') {
               treeSelection.selectAll(!treeSelection.areAllSelected);
             } else if (treeQuery.data) {
-              const matchingNode = findMatchingNode(
-                treeQuery.data.tree || null,
-                treeViewItem.id || ''
+              const matchingNode = findMatchingSelectableNode(
+                treeQuery.data,
+                treeViewItem.id || '',
+                isNodeSelectable
               );
               const isFullyChecked = isNodeFullyChecked(
                 treeQuery.data,
@@ -158,8 +159,8 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
                 treeSelection.isItemSelected,
                 isNodeSelectable
               );
-              const nodesToSelect = findMatchingNodeAndDescendants(
-                treeQuery.data.tree,
+              const nodesToSelect = findMatchingSelectableNodeAndDescendants(
+                treeQuery.data,
                 treeViewItem.id || '',
                 isNodeSelectable
               );

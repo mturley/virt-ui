@@ -21,8 +21,8 @@ export interface IndexedTree<T extends InventoryTree = InventoryTree> {
   tree: T;
   flattenedNodes: T[];
   vmSelfLinks: string[];
-  pathsBySelfLink: Record<string, T[] | undefined>;
-  descendantsBySelfLink: Record<string, T[] | undefined>;
+  pathsBySelfLink: Record<string, T[] | undefined>; // Flattened list of nodes leading to each node
+  descendantsBySelfLink: Record<string, T[] | undefined>; // Flattened list of nodes under each node
   getDescendants: (node: InventoryTree, includeNode?: boolean) => InventoryTree[];
 }
 

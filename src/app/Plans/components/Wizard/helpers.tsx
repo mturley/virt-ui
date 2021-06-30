@@ -284,18 +284,6 @@ export const getAvailableVMs = (
   ];
 };
 
-// Given a tree and a vm, get a flattened breadcrumb of nodes from the root to the VM.
-// TODO is this necessary at all with the indexed stuff?
-export const findVMTreePath = (node: InventoryTree, vmSelfLink: string): InventoryTree[] | null => {
-  if (node.object?.selfLink === vmSelfLink) return [node];
-  if (!node.children) return null;
-  for (const i in node.children) {
-    const childPath = findVMTreePath(node.children[i], vmSelfLink);
-    if (childPath) return [node, ...childPath];
-  }
-  return null;
-};
-
 export interface IVMTreePathInfo {
   datacenter: ICommonTreeObject | null;
   cluster: ICommonTreeObject | null;
@@ -336,46 +324,36 @@ export const getVMTreePathInfo = (
   };
 };
 
-// TODO This can be simplified to use the last element of pathsBySelfLink
-export const findMatchingNode = (
-  tree: InventoryTree | null,
-  vmSelfLink: string
+export const findMatchingSelectableNode = (
+  indexedTree: IndexedTree,
+  vmSelfLink: string,
+  isNodeSelectable: (node: InventoryTree) => boolean
 ): InventoryTree | null => {
-  const matchingPath = tree && findVMTreePath(tree, vmSelfLink);
-  const matchingNode = matchingPath?.slice().reverse().find(isIncludedNode);
+  const matchingPath = indexedTree.pathsBySelfLink[vmSelfLink];
+  const matchingNode = matchingPath?.slice().reverse().find(isNodeSelectable);
   return matchingNode || null;
 };
 
-// TODO This can be simplified to use the descendantsBySelfLink array
-export const findMatchingNodeAndDescendants = (
-  tree: InventoryTree | null,
+export const findMatchingSelectableNodeAndDescendants = (
+  indexedTree: IndexedTree,
   vmSelfLink: string,
   isNodeSelectable: (node: InventoryTree) => boolean
 ): InventoryTree[] => {
-  const matchingNode = findMatchingNode(tree, vmSelfLink);
+  const matchingNode = findMatchingSelectableNode(indexedTree, vmSelfLink, isNodeSelectable);
   if (!matchingNode) return [];
-  const nodeAndDescendants: InventoryTree[] = [];
-  const pushNodeAndDescendants = (n: InventoryTree) => {
-    if (isNodeSelectable(n)) nodeAndDescendants.push(n);
-    if (n.children) {
-      n.children.filter(isIncludedNode).forEach(pushNodeAndDescendants);
-    }
-  };
-  pushNodeAndDescendants(matchingNode);
-  return nodeAndDescendants;
+  return indexedTree.getDescendants(matchingNode);
 };
 
-// TODO This can probably be simplified to use the last included selectable node in pathsBySelfLink
 export const findNodesMatchingSelectedVMs = (
-  tree: InventoryTree | null,
+  indexedTree: IndexedTree,
   selectedVMs: SourceVM[],
   isNodeSelectable: (node: InventoryTree) => boolean
 ): InventoryTree[] =>
   Array.from(
     new Set(
-      selectedVMs.flatMap((vm) =>
-        findMatchingNodeAndDescendants(tree, vm.selfLink, isNodeSelectable)
-      )
+      selectedVMs
+        .map((vm) => findMatchingSelectableNode(indexedTree, vm.selfLink, isNodeSelectable))
+        .filter((node) => !!node) as InventoryTree[]
     )
   );
 
@@ -627,11 +605,16 @@ export const useEditingPlanPrefillEffect = (
   const isNodeSelectable = useIsNodeSelectableCallback(defaultTreeType);
 
   React.useEffect(() => {
-    if (!isStartedPrefilling && queryStatus === 'success' && planBeingEdited) {
+    if (
+      !isStartedPrefilling &&
+      queryStatus === 'success' &&
+      planBeingEdited &&
+      hostTreeQuery.data
+    ) {
       setIsStartedPrefilling(true);
       const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery);
       const selectedTreeNodes = findNodesMatchingSelectedVMs(
-        hostTreeQuery.data?.tree || null,
+        hostTreeQuery.data,
         selectedVMs,
         isNodeSelectable
       );

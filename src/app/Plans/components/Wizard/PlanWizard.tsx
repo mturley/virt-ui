@@ -38,7 +38,7 @@ import {
   IMappingBuilderItem,
   mappingBuilderItemsSchema,
 } from '@app/Mappings/components/MappingBuilder';
-import { generateMappings, getSelectedVMsFromIds, useEditingPlanPrefillEffect } from './helpers';
+import { generateMappings, useEditingPlanPrefillEffect } from './helpers';
 import {
   getMappingNameSchema,
   useMappingsQuery,
@@ -251,7 +251,7 @@ const PlanWizard: React.FunctionComponent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mutationStatus]);
 
-  const selectedVMs = getSelectedVMsFromIds(forms.selectVMs.values.selectedVMIds, vmsQuery);
+  const selectedVMs = vmsQuery.data?.findVMsByIds(forms.selectVMs.values.selectedVMIds) || [];
 
   const steps: WizardStep[] = [
     {

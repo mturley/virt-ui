@@ -93,7 +93,7 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
       getAvailableVMs(
         indexedTree,
         selectedTreeNodes,
-        vmsQuery.data || [],
+        vmsQuery.data,
         treeType,
         selectedVMsOnMount.current
       ),

@@ -61,7 +61,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
         treeSelection.selectAll(false);
         lastTreeType.current = form.values.treeType;
       } else if (vmsQuery.isSuccess && treeQuery.isSuccess) {
-        const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery);
+        const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery.data);
         const selectedTreeNodes = findNodesMatchingSelectedVMs(
           treeQuery.data,
           selectedVMs,
@@ -90,7 +90,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     const numVMs = getAvailableVMs(
       treeQuery.data,
       selectedDescendants,
-      vmsQuery.data || [],
+      vmsQuery.data,
       treeType
     ).length;
     const rootNodeSuffix = ` VM${numVMs !== 1 ? 's' : ''}`;

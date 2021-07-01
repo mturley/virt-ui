@@ -3,7 +3,6 @@ import * as React from 'react';
 import {
   IHook,
   IMetaObjectMeta,
-  InventoryProvider,
   IPlan,
   MappingType,
   SourceInventoryProvider,
@@ -30,32 +29,33 @@ const PlanDetailsModal: React.FunctionComponent<IPlanDetailsModalProps> = ({
 }: IPlanDetailsModalProps) => {
   usePausedPollingEffect();
 
-  const networkMappings = useMappingsQuery(MappingType.Network);
+  const networkMappingsQuery = useMappingsQuery(MappingType.Network);
   const networkMapping =
-    networkMappings.data?.items.find((mapping) =>
+    networkMappingsQuery.data?.items.find((mapping) =>
       isSameResource(mapping.metadata as IMetaObjectMeta, plan.spec.map.network)
     ) || null;
 
-  const storageMappings = useMappingsQuery(MappingType.Storage);
+  const storageMappingsQuery = useMappingsQuery(MappingType.Storage);
   const storageMapping =
-    storageMappings.data?.items.find((mapping) =>
+    storageMappingsQuery.data?.items.find((mapping) =>
       isSameResource(mapping.metadata as IMetaObjectMeta, plan.spec.map.storage)
     ) || null;
 
-  const providers = useInventoryProvidersQuery();
-  const allProviders = providers.data
-    ? (SOURCE_PROVIDER_TYPES.flatMap((key) => providers.data[key]) as SourceInventoryProvider[])
+  const providersQuery = useInventoryProvidersQuery();
+  const allProviders = providersQuery.data
+    ? (SOURCE_PROVIDER_TYPES.flatMap(
+        (key) => providersQuery.data[key]
+      ) as SourceInventoryProvider[])
     : [];
   const provider =
     allProviders.find((provider) => isSameResource(provider, plan.spec.provider.source)) || null;
 
-  const vms = useSourceVMsQuery(provider);
-  const selectedVMs =
-    vms.data?.filter((vm) => plan.spec.vms.find((planVM) => planVM.id === vm.id)) || [];
+  const vmsQuery = useSourceVMsQuery(provider);
+  const selectedVMs = vmsQuery.data?.findVMsByIds(plan.spec.vms.map(({ id }) => id)) || [];
 
-  const hooks = useHooksQuery();
+  const hooksQuery = useHooksQuery();
   const selectedHooks =
-    hooks.data?.items.filter((hook) =>
+    hooksQuery.data?.items.filter((hook) =>
       plan.spec.vms.find((vm) =>
         vm.hooks?.find(
           (VMHook) =>
@@ -81,10 +81,10 @@ const PlanDetailsModal: React.FunctionComponent<IPlanDetailsModalProps> = ({
   return (
     <ResolvedQueries
       results={[
-        networkMappings,
-        storageMappings,
-        providers,
-        vms,
+        networkMappingsQuery,
+        storageMappingsQuery,
+        providersQuery,
+        vmsQuery,
         ...networkMappingResources.queries,
         ...storageMappingResources.queries,
       ]}

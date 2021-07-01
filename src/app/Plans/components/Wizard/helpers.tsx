@@ -41,6 +41,7 @@ import {
   useHooksQuery,
   useSourceVMsQuery,
   IndexedTree,
+  IndexedSourceVMs,
 } from '@app/queries';
 import { UseQueryResult, QueryStatus } from 'react-query';
 import { StatusType } from '@konveyor/lib-ui';
@@ -265,22 +266,17 @@ const getAllVMChildren = (
 export const getAvailableVMs = (
   indexedTree: IndexedTree | undefined,
   selectedTreeNodes: InventoryTree[],
-  allVMs: SourceVM[],
+  indexedVMs: IndexedSourceVMs | undefined,
   treeType: InventoryTreeType,
   includeExtraVMs: SourceVM[] = []
 ): SourceVM[] => {
   if (!indexedTree) return [];
-  const treeVMs = getAllVMChildren(indexedTree, selectedTreeNodes, treeType)
-    .map((node) => node.object)
-    .filter((object) => !!object) as ICommonTreeObject[];
-  const vmSelfLinks = treeVMs.map((object) => object.selfLink);
+  const treeVMNodes = getAllVMChildren(indexedTree, selectedTreeNodes, treeType);
+  const vmSelfLinks = treeVMNodes.flatMap(({ object }) => (object ? [object.selfLink] : []));
+  const matchingVMs = indexedVMs?.findVMsBySelfLinks(vmSelfLinks) || [];
   return [
     ...includeExtraVMs,
-    ...allVMs.filter(
-      (vm) =>
-        vmSelfLinks.includes(vm.selfLink) &&
-        !includeExtraVMs.some((extraVM) => vm.id === extraVM.id)
-    ),
+    ...matchingVMs?.filter((vm) => !includeExtraVMs.some((extraVM) => vm.id === extraVM.id)),
   ];
 };
 
@@ -517,22 +513,12 @@ export const generatePlan = (
   },
 });
 
-export const getSelectedVMsFromIds = (
-  vmIds: string[],
-  vmsQuery: UseQueryResult<SourceVM[]>
-): SourceVM[] =>
-  vmIds.flatMap((id) => {
-    const matchingVM = vmsQuery.data?.find((vm) => vm.id === id);
-    return matchingVM ? [matchingVM] : [];
-  });
-
 export const getSelectedVMsFromPlan = (
   planBeingEdited: IPlan | null,
-  vmsQuery: UseQueryResult<SourceVM[]>
+  indexedVMs: IndexedSourceVMs | undefined
 ): SourceVM[] => {
-  if (!planBeingEdited) return [];
-  const vmIds = planBeingEdited.spec.vms.map(({ id }) => id);
-  return getSelectedVMsFromIds(vmIds, vmsQuery);
+  if (!planBeingEdited || !indexedVMs) return [];
+  return indexedVMs.findVMsByIds(planBeingEdited?.spec.vms.map(({ id }) => id));
 };
 
 interface IEditingPrefillResults {
@@ -612,7 +598,7 @@ export const useEditingPlanPrefillEffect = (
       hostTreeQuery.data
     ) {
       setIsStartedPrefilling(true);
-      const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery);
+      const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery.data);
       const selectedTreeNodes = findNodesMatchingSelectedVMs(
         hostTreeQuery.data,
         selectedVMs,

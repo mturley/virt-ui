@@ -115,6 +115,7 @@ describe('<AddEditProviderModal />', () => {
     userEvent.click(nextButton);
 
     expect(screen.getByRole('heading', { name: /Select VMs/ })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('VMware VMs table')).toBeInTheDocument());
     expect(screen.getByRole('checkbox', { name: /Select row 0/ })).toBeChecked();
     expect(nextButton).toBeEnabled();
     userEvent.click(nextButton);

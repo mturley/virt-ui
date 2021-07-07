@@ -13,10 +13,12 @@ interface IBaseSourceVM {
   selfLink: string;
   concerns: ISourceVMConcern[];
   revisionValidated: number;
+  [key: string]: any;
 }
 
 export interface IVMwareVMDisk {
   datastore: IVMwareObjRef;
+  [key: string]: any;
 }
 
 export interface IVMwareVM extends IBaseSourceVM {

@@ -7,6 +7,7 @@ export interface ICommonTreeObject {
   id: string;
   name: string;
   selfLink: string;
+  [key: string]: any;
 }
 
 interface ICommonTree {

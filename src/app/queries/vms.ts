@@ -19,6 +19,23 @@ export interface IndexedSourceVMs {
 const findVMsInRecord = (record: SourceVMsRecord, keys: string[]) =>
   keys.flatMap((key) => (record[key] ? [record[key]] : [])) as SourceVM[];
 
+const indexVMs = (vms: SourceVM[]): IndexedSourceVMs => {
+  const sortedVMs = sortByName(vms.filter((vm) => !(vm as IVMwareVM).isTemplate));
+  const vmsById: SourceVMsRecord = {};
+  const vmsBySelfLink: SourceVMsRecord = {};
+  sortedVMs.forEach((vm) => {
+    vmsById[vm.id] = vm;
+    vmsBySelfLink[vm.selfLink] = vm;
+  });
+  return {
+    vms,
+    vmsById,
+    vmsBySelfLink,
+    findVMsByIds: (ids) => findVMsInRecord(vmsById, ids),
+    findVMsBySelfLinks: (selfLinks) => findVMsInRecord(vmsBySelfLink, selfLinks),
+  };
+};
+
 export const useSourceVMsQuery = (
   provider: SourceInventoryProvider | null
 ): UseQueryResult<IndexedSourceVMs> => {
@@ -31,22 +48,7 @@ export const useSourceVMsQuery = (
       queryFn: useAuthorizedFetch(getInventoryApiUrl(`${provider?.selfLink || ''}/vms?detail=1`)),
       enabled: !!provider,
       refetchInterval: usePollingContext().refetchInterval,
-      select: (vms) => {
-        const sortedVMs = sortByName(vms.filter((vm) => !(vm as IVMwareVM).isTemplate));
-        const vmsById: SourceVMsRecord = {};
-        const vmsBySelfLink: SourceVMsRecord = {};
-        sortedVMs.forEach((vm) => {
-          vmsById[vm.id] = vm;
-          vmsBySelfLink[vm.selfLink] = vm;
-        });
-        return {
-          vms,
-          vmsById,
-          vmsBySelfLink,
-          findVMsByIds: (ids) => findVMsInRecord(vmsById, ids),
-          findVMsBySelfLinks: (selfLinks) => findVMsInRecord(vmsBySelfLink, selfLinks),
-        };
-      },
+      select: indexVMs,
     },
     mockVMs
   );

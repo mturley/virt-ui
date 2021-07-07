@@ -27,6 +27,7 @@ export interface IndexedTree<T extends InventoryTree = InventoryTree> {
 }
 
 const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
+  const sortedTree = sortTreeItemsByName(tree);
   const flattenedNodes: T[] = [];
   const vmSelfLinks: string[] = [];
   const pathsBySelfLink: Record<string, T[] | undefined> = {};
@@ -49,8 +50,8 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
     return [];
   };
   return {
-    tree,
-    flattenedNodes: walk(tree),
+    tree: sortedTree,
+    flattenedNodes: walk(sortedTree),
     vmSelfLinks,
     descendantsBySelfLink,
     pathsBySelfLink,
@@ -79,7 +80,7 @@ export const useInventoryTreeQuery = <T extends InventoryTree>(
       queryFn: useAuthorizedFetch(getInventoryApiUrl(`${provider?.selfLink || ''}${apiSlug}`)),
       enabled: isValidQuery && !!provider,
       refetchInterval: usePollingContext().refetchInterval,
-      select: (tree) => indexTree(sortTreeItemsByName(tree)),
+      select: indexTree,
     },
     (treeType === InventoryTreeType.Cluster
       ? provider?.type === 'vsphere'

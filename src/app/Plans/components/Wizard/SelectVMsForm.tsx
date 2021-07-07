@@ -84,7 +84,7 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
   const vmsQuery = useSourceVMsQuery(sourceProvider);
 
   const indexedTree: IndexedTree | undefined =
-    treeType === InventoryTreeType.Cluster ? hostTreeQuery.data : vmTreeQuery.data;
+    treeType === InventoryTreeType.Cluster ? hostTreeQuery.indexedData : vmTreeQuery.indexedData;
 
   // Even if some of the already-selected VMs don't match the filter, include them in the list.
   const selectedVMsOnMount = React.useRef(selectedVMs);
@@ -93,15 +93,15 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
       getAvailableVMs(
         indexedTree,
         selectedTreeNodes,
-        vmsQuery.data,
+        vmsQuery.indexedData,
         treeType,
         selectedVMsOnMount.current
       ),
-    [selectedTreeNodes, vmsQuery.data, treeType]
+    [selectedTreeNodes, vmsQuery.indexedData, treeType]
   );
 
   const getVMInfo = (vm: SourceVM) =>
-    getVMTreePathInfo(vm.selfLink, hostTreeQuery.data, vmTreeQuery.data);
+    getVMTreePathInfo(vm.selfLink, hostTreeQuery.indexedData, vmTreeQuery.indexedData);
 
   const filterCategories: FilterCategory<SourceVM>[] = [
     {
@@ -374,9 +374,9 @@ const SelectVMsForm: React.FunctionComponent<ISelectVMsFormProps> = ({
   return (
     <ResolvedQueries
       results={[
-        hostTreeQuery,
-        ...(sourceProvider?.type === 'vsphere' ? [vmTreeQuery] : []),
-        vmsQuery,
+        hostTreeQuery.result,
+        ...(sourceProvider?.type === 'vsphere' ? [vmTreeQuery.result] : []),
+        vmsQuery.result,
       ]}
       errorTitles={[
         'Error loading inventory host tree data',

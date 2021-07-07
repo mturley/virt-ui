@@ -51,7 +51,7 @@ const PlanDetailsModal: React.FunctionComponent<IPlanDetailsModalProps> = ({
     allProviders.find((provider) => isSameResource(provider, plan.spec.provider.source)) || null;
 
   const vmsQuery = useSourceVMsQuery(provider);
-  const selectedVMs = vmsQuery.data?.findVMsByIds(plan.spec.vms.map(({ id }) => id)) || [];
+  const selectedVMs = vmsQuery.indexedData?.findVMsByIds(plan.spec.vms.map(({ id }) => id)) || [];
 
   const hooksQuery = useHooksQuery();
   const selectedHooks =
@@ -84,7 +84,7 @@ const PlanDetailsModal: React.FunctionComponent<IPlanDetailsModalProps> = ({
         networkMappingsQuery,
         storageMappingsQuery,
         providersQuery,
-        vmsQuery,
+        vmsQuery.result,
         ...networkMappingResources.queries,
         ...storageMappingResources.queries,
       ]}

@@ -251,7 +251,8 @@ const PlanWizard: React.FunctionComponent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mutationStatus]);
 
-  const selectedVMs = vmsQuery.data?.findVMsByIds(forms.selectVMs.values.selectedVMIds) || [];
+  const selectedVMs =
+    vmsQuery.indexedData?.findVMsByIds(forms.selectVMs.values.selectedVMIds) || [];
 
   const steps: WizardStep[] = [
     {

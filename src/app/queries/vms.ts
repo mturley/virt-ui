@@ -5,7 +5,6 @@ import { useMockableQuery, getInventoryApiUrl, sortByName } from './helpers';
 import { MOCK_RHV_VMS, MOCK_VMWARE_VMS } from './mocks/vms.mock';
 import { SourceInventoryProvider } from './types';
 import { SourceVM, IVMwareVM } from './types/vms.types';
-import { useAsyncMemo } from 'use-async-memo';
 
 type SourceVMsRecord = Record<string, SourceVM | undefined>;
 
@@ -39,22 +38,20 @@ const indexVMs = (vms: SourceVM[]): IndexedSourceVMs => {
 
 export const useSourceVMsQuery = (
   provider: SourceInventoryProvider | null
-): { result: UseQueryResult<SourceVM[]>; indexedData: IndexedSourceVMs | undefined } => {
+): UseQueryResult<IndexedSourceVMs> => {
   let mockVMs: SourceVM[] = [];
   if (provider?.type === 'vsphere') mockVMs = MOCK_VMWARE_VMS;
   if (provider?.type === 'ovirt') mockVMs = MOCK_RHV_VMS;
-  const result = useMockableQuery<SourceVM[]>(
+  const result = useMockableQuery<SourceVM[], unknown, IndexedSourceVMs>(
     {
       queryKey: ['vms', provider?.name],
       queryFn: useAuthorizedFetch(getInventoryApiUrl(`${provider?.selfLink || ''}/vms?detail=1`)),
       enabled: !!provider,
       refetchInterval: usePollingContext().refetchInterval,
+      select: indexVMs,
     },
     mockVMs
   );
 
-  return {
-    result,
-    indexedData: useAsyncMemo(async () => result.data && indexVMs(result.data), [result.data]),
-  };
+  return result;
 };

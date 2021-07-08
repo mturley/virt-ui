@@ -560,8 +560,8 @@ export const useEditingPlanPrefillEffect = (
 
   const queries = [
     providersQuery,
-    vmsQuery.result,
-    hostTreeQuery.result,
+    vmsQuery,
+    hostTreeQuery,
     ...networkMappingResourceQueries.queries,
     ...storageMappingResourceQueries.queries,
     networkMappingsQuery,
@@ -595,12 +595,12 @@ export const useEditingPlanPrefillEffect = (
       !isStartedPrefilling &&
       queryStatus === 'success' &&
       planBeingEdited &&
-      hostTreeQuery.indexedData
+      hostTreeQuery.data
     ) {
       setIsStartedPrefilling(true);
-      const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery.indexedData);
+      const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery.data);
       const selectedTreeNodes = findNodesMatchingSelectedVMs(
-        hostTreeQuery.indexedData,
+        hostTreeQuery.data,
         selectedVMs,
         isNodeSelectable
       );

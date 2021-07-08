@@ -98,7 +98,7 @@ const VMMigrationDetails: React.FunctionComponent = () => {
   const { sourceProvider } = findProvidersByRefs(plan?.spec.provider || null, providersQuery);
 
   const vmsQuery = useSourceVMsQuery(sourceProvider);
-  const getVMName = (vmStatus: IVMStatus) => vmsQuery.indexedData?.vmsById[vmStatus.id]?.name || '';
+  const getVMName = (vmStatus: IVMStatus) => vmsQuery.data?.vmsById[vmStatus.id]?.name || '';
 
   const migrationsQuery = useMigrationsQuery();
   const latestMigration = findLatestMigration(plan || null, migrationsQuery.data?.items || null);
@@ -323,7 +323,7 @@ const VMMigrationDetails: React.FunctionComponent = () => {
       </PageSection>
       <PageSection>
         <ResolvedQueries
-          results={[plansQuery, providersQuery, vmsQuery.result]}
+          results={[plansQuery, providersQuery, vmsQuery]}
           errorTitles={[
             'Error loading plan details',
             'Error loading providers',
@@ -399,8 +399,7 @@ const VMMigrationDetails: React.FunctionComponent = () => {
         isOpen={isCancelModalOpen}
         toggleOpen={toggleCancelModal}
         mutateFn={() => {
-          const vmsToCancel =
-            vmsQuery.indexedData?.findVMsByIds(selectedItems.map(({ id }) => id)) || [];
+          const vmsToCancel = vmsQuery.data?.findVMsByIds(selectedItems.map(({ id }) => id)) || [];
           cancelVMsMutation.mutate(vmsToCancel);
         }}
         mutateResult={cancelVMsMutation}

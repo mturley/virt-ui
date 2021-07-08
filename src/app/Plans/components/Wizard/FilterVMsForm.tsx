@@ -46,7 +46,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
   const isNodeSelectable = useIsNodeSelectableCallback(form.values.treeType);
 
   const treeSelection = useSelectionState({
-    items: treeQuery.indexedData?.flattenedNodes.filter(isNodeSelectable) || [],
+    items: treeQuery.data?.flattenedNodes.filter(isNodeSelectable) || [],
     externalState: [form.fields.selectedTreeNodes.value, form.fields.selectedTreeNodes.setValue],
     isEqual: (a: InventoryTree, b: InventoryTree) => a.object?.selfLink === b.object?.selfLink,
   });
@@ -60,10 +60,10 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
       if (!planBeingEdited || !form.values.isPrefilled) {
         treeSelection.selectAll(false);
         lastTreeType.current = form.values.treeType;
-      } else if (vmsQuery.result.isSuccess && treeQuery.result.isSuccess && treeQuery.indexedData) {
-        const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery.indexedData);
+      } else if (vmsQuery.isSuccess && treeQuery.isSuccess) {
+        const selectedVMs = getSelectedVMsFromPlan(planBeingEdited, vmsQuery.data);
         const selectedTreeNodes = findNodesMatchingSelectedVMs(
-          treeQuery.indexedData,
+          treeQuery.data,
           selectedVMs,
           isNodeSelectable
         );
@@ -83,14 +83,14 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
   ]);
 
   const getNodeBadgeContent = (node: InventoryTree, isRootNode: boolean) => {
-    if (!treeQuery.indexedData) return null;
+    if (!treeQuery.data) return null;
     const { treeType } = form.values;
     const { isItemSelected, selectedItems } = treeSelection;
-    const selectedDescendants = treeQuery.indexedData.getDescendants(node).filter(isItemSelected);
+    const selectedDescendants = treeQuery.data.getDescendants(node).filter(isItemSelected);
     const numVMs = getAvailableVMs(
-      treeQuery.indexedData,
+      treeQuery.data,
       selectedDescendants,
-      vmsQuery.indexedData,
+      vmsQuery.data,
       treeType
     ).length;
     const rootNodeSuffix = ` VM${numVMs !== 1 ? 's' : ''}`;
@@ -127,13 +127,13 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
         </Tabs>
       ) : null}
       <ResolvedQueries
-        results={[vmsQuery.result, treeQuery.result]}
+        results={[vmsQuery, treeQuery]}
         errorTitles={['Error loading VMs', 'Error loading inventory tree data']}
         emptyStateBody={LONG_LOADING_MESSAGE}
       >
         <TreeView
           data={filterAndConvertInventoryTree(
-            treeQuery.indexedData || null,
+            treeQuery.data || null,
             searchText,
             treeSelection.isItemSelected,
             treeSelection.areAllSelected,
@@ -147,20 +147,20 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
           onCheck={(_event, treeViewItem) => {
             if (treeViewItem.id === 'converted-root') {
               treeSelection.selectAll(!treeSelection.areAllSelected);
-            } else if (treeQuery.indexedData) {
+            } else if (treeQuery.data) {
               const matchingNode = findMatchingSelectableNode(
-                treeQuery.indexedData,
+                treeQuery.data,
                 treeViewItem.id || '',
                 isNodeSelectable
               );
               const isFullyChecked = isNodeFullyChecked(
-                treeQuery.indexedData,
+                treeQuery.data,
                 matchingNode,
                 treeSelection.isItemSelected,
                 isNodeSelectable
               );
               const nodesToSelect = findMatchingSelectableNodeAndDescendants(
-                treeQuery.indexedData,
+                treeQuery.data,
                 treeViewItem.id || '',
                 isNodeSelectable
               );

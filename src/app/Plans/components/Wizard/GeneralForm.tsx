@@ -19,7 +19,6 @@ import { IPlan, POD_NETWORK, InventoryTreeType } from '@app/queries/types';
 import {
   useClusterProvidersQuery,
   useInventoryProvidersQuery,
-  useSourceVMsQuery,
   useInventoryTreeQuery,
   useOpenShiftNetworksQuery,
   useNamespacesQuery,

@@ -206,7 +206,6 @@ export const filterAndConvertInventoryTree = (
   isNodeSelectable: (node: InventoryTree) => boolean,
   getNodeBadgeContent: (node: InventoryTree, isRootNode: boolean) => React.ReactNode
 ): TreeViewDataItem[] => {
-  console.log('   - filtering and converting tree');
   if (!indexedTree?.tree) return [];
   const rootNode = indexedTree.tree;
   const isPartiallyChecked = isNodePartiallyChecked(
@@ -216,7 +215,7 @@ export const filterAndConvertInventoryTree = (
     areAllSelected
   );
   const badge = getNodeBadgeContent(rootNode, true);
-  const returnVal = [
+  return [
     {
       name: 'All datacenters',
       id: 'converted-root',
@@ -236,8 +235,6 @@ export const filterAndConvertInventoryTree = (
       hasBadge: !!badge,
     },
   ];
-  console.log('   - ...done filtering and converting tree');
-  return returnVal;
 };
 
 // From the flattened selected nodes list, get all the unique VMs.

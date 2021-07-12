@@ -35,7 +35,6 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
   sourceProvider,
   planBeingEdited,
 }: IFilterVMsFormProps) => {
-  console.log('--- starting render');
   usePausedPollingEffect();
 
   const [searchText, setSearchText] = React.useState('');
@@ -51,15 +50,12 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     isEqual: (a: InventoryTree, b: InventoryTree) => a.object?.selfLink === b.object?.selfLink,
   });
 
-  console.log('   - useSelectionState called');
-
   const isFirstRender = React.useRef(true);
   const lastTreeType = React.useRef(form.values.treeType);
   React.useEffect(() => {
     // Clear or reset selection when the tree type tab changes
     const treeTypeChanged = form.values.treeType !== lastTreeType.current;
     if (!isFirstRender.current && treeTypeChanged) {
-      console.log('   - clearing/resetting things in the tree?');
       if (!planBeingEdited || !form.values.isPrefilled) {
         treeSelection.selectAll(false);
         lastTreeType.current = form.values.treeType;
@@ -85,29 +81,21 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     isNodeSelectable,
   ]);
 
-  console.log('   - useEffect called');
-
   const getNodeBadgeContent = (node: InventoryTree, isRootNode: boolean) => {
-    console.log('   - getting node badge content', node);
     if (!treeQuery.data) return null;
     const { treeType } = form.values;
     const { isItemSelected, selectedItems } = treeSelection;
-    console.log('   - === getting selected descendants');
     const selectedDescendants = treeQuery.data.getDescendants(node, true).filter(isItemSelected);
-    console.log('   - === ...done getting selected descendants');
-    console.log('   - === getting available VMs');
     const numVMs = getAvailableVMs(
       treeQuery.data,
       selectedDescendants,
       vmsQuery.data,
       treeType
     ).length;
-    console.log('   - === ...done getting available VMs');
     const rootNodeSuffix = ` VM${numVMs !== 1 ? 's' : ''}`;
     if (numVMs || isItemSelected(node) || (isRootNode && selectedItems.length > 0)) {
       return `${numVMs}${isRootNode ? rootNodeSuffix : ''}`;
     }
-    console.log('   - ...done getting node badge content', node);
     return null;
   };
 
@@ -119,8 +107,6 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     isNodeSelectable,
     getNodeBadgeContent
   );
-
-  console.log('--- ...done rendering');
 
   return (
     <div className="plan-wizard-filter-vms-form">
@@ -160,7 +146,6 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
           hasBadges
           onSearch={(event) => setSearchText(event.target.value)}
           onCheck={(_event, treeViewItem) => {
-            console.log('handling selection');
             if (treeViewItem.id === 'converted-root') {
               treeSelection.selectAll(!treeSelection.areAllSelected);
             } else if (treeQuery.data) {
@@ -183,7 +168,6 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
                 }
               }
             }
-            console.log('...done handling selection');
           }}
           searchProps={{
             id: 'inventory-search',

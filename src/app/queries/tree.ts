@@ -28,7 +28,6 @@ export interface IndexedTree<T extends InventoryTree = InventoryTree> {
 }
 
 const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
-  console.log('indexing tree');
   const sortedTree = sortTreeItemsByName(tree);
   const flattenedNodes: T[] = [];
   const vmSelfLinks: string[] = [];
@@ -57,7 +56,6 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
     }
     return [];
   };
-  console.log('...done indexing tree');
   return {
     tree: sortedTree,
     flattenedNodes: walk(sortedTree),

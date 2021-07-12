@@ -42,10 +42,10 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
     }
     if (node.children) {
       const children = node.children as T[];
-      const flattenedDescendants = children.flatMap((childNode) => [
+      const flattenedDescendants = [
         ...children,
-        ...walk(childNode, [...ancestors, node]),
-      ]);
+        ...children.flatMap((childNode) => walk(childNode, [...ancestors, node])),
+      ];
       if (node.object) {
         descendantsBySelfLink[node.object.selfLink] = flattenedDescendants;
         vmDescendantsBySelfLink[node.object.selfLink] = flattenedDescendants.filter(

@@ -20,6 +20,7 @@ const findVMsInRecord = (record: SourceVMsRecord, keys: string[]) =>
   keys.flatMap((key) => (record[key] ? [record[key]] : [])) as SourceVM[];
 
 const indexVMs = (vms: SourceVM[]): IndexedSourceVMs => {
+  console.log('indexing VMs');
   const sortedVMs = sortByName(vms.filter((vm) => !(vm as IVMwareVM).isTemplate));
   const vmsById: SourceVMsRecord = {};
   const vmsBySelfLink: SourceVMsRecord = {};
@@ -27,6 +28,7 @@ const indexVMs = (vms: SourceVM[]): IndexedSourceVMs => {
     vmsById[vm.id] = vm;
     vmsBySelfLink[vm.selfLink] = vm;
   });
+  console.log('...done indexing VMs');
   return {
     vms,
     vmsById,

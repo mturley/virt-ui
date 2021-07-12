@@ -102,7 +102,6 @@ const GeneralForm: React.FunctionComponent<IGeneralFormProps> = ({
   // See issue: https://github.com/konveyor/forklift-ui/issues/704
   /*
   // Cache these queries as soon as a source provider is selected so they are ready in later wizard steps
-  useSourceVMsQuery(form.values.sourceProvider);
   useInventoryTreeQuery(form.values.sourceProvider, InventoryTreeType.Cluster);
   useInventoryTreeQuery(form.values.sourceProvider, InventoryTreeType.VM);
   */

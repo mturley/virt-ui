@@ -100,6 +100,15 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     return null;
   };
 
+  const treeViewData = filterAndConvertInventoryTree(
+    treeQuery.data || null,
+    searchText,
+    treeSelection.isItemSelected,
+    treeSelection.areAllSelected,
+    isNodeSelectable,
+    getNodeBadgeContent
+  );
+
   return (
     <div className="plan-wizard-filter-vms-form">
       <TextContent>
@@ -132,14 +141,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
         emptyStateBody={LONG_LOADING_MESSAGE}
       >
         <TreeView
-          data={filterAndConvertInventoryTree(
-            treeQuery.data || null,
-            searchText,
-            treeSelection.isItemSelected,
-            treeSelection.areAllSelected,
-            isNodeSelectable,
-            getNodeBadgeContent
-          )}
+          data={treeViewData}
           defaultAllExpanded
           hasChecks
           hasBadges

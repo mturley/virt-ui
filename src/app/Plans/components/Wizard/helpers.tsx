@@ -245,7 +245,7 @@ const getAllVMChildren = (
 ): InventoryTree[] => {
   if (nodes.length === 0) return [];
   const getDirectVMChildren = (node: InventoryTree): InventoryTree[] =>
-    node.children?.filter((node) => node.kind === 'VM') || [];
+    (node.object && indexedTree.directVMChildrenBySelfLink[node.object.selfLink]) || [];
   return Array.from(
     new Set(
       nodes.flatMap((node) => {
@@ -337,7 +337,7 @@ export const findMatchingSelectableNodeAndDescendants = (
 ): InventoryTree[] => {
   const matchingNode = findMatchingSelectableNode(indexedTree, vmSelfLink, isNodeSelectable);
   if (!matchingNode) return [];
-  return indexedTree.getDescendants(matchingNode);
+  return indexedTree.getDescendants(matchingNode).filter((node) => isNodeSelectable(node));
 };
 
 export const findNodesMatchingSelectedVMs = (

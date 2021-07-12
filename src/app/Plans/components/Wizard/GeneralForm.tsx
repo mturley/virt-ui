@@ -98,13 +98,9 @@ const GeneralForm: React.FunctionComponent<IGeneralFormProps> = ({
     }
   };
 
-  // TODO: re-enable this when the freezing issues while running the `select` functions in these queries is fixed.
-  // See issue: https://github.com/konveyor/forklift-ui/issues/704
-  /*
   // Cache these queries as soon as a source provider is selected so they are ready in later wizard steps
   useInventoryTreeQuery(form.values.sourceProvider, InventoryTreeType.Cluster);
   useInventoryTreeQuery(form.values.sourceProvider, InventoryTreeType.VM);
-  */
 
   return (
     <ResolvedQueries

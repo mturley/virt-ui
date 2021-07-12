@@ -328,15 +328,12 @@ export const findMatchingSelectableNode = (
   return matchingNode || null;
 };
 
-export const findMatchingSelectableNodeAndDescendants = (
+export const findMatchingSelectableDescendants = (
   indexedTree: IndexedTree,
-  vmSelfLink: string,
+  node: InventoryTree,
   isNodeSelectable: (node: InventoryTree) => boolean
-): InventoryTree[] => {
-  const matchingNode = findMatchingSelectableNode(indexedTree, vmSelfLink, isNodeSelectable);
-  if (!matchingNode) return [];
-  return indexedTree.getDescendants(matchingNode).filter((node) => isNodeSelectable(node));
-};
+): InventoryTree[] =>
+  indexedTree.getDescendants(node, true).filter((node) => isNodeSelectable(node));
 
 export const findNodesMatchingSelectedVMs = (
   indexedTree: IndexedTree,

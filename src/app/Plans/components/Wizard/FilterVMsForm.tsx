@@ -11,8 +11,7 @@ import {
 } from '@app/queries/types';
 import {
   filterAndConvertInventoryTree,
-  findMatchingSelectableNode,
-  findMatchingSelectableNodeAndDescendants,
+  findMatchingSelectableDescendants,
   findNodesMatchingSelectedVMs,
   getAvailableVMs,
   getSelectedVMsFromPlan,
@@ -86,7 +85,7 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
     if (!treeQuery.data) return null;
     const { treeType } = form.values;
     const { isItemSelected, selectedItems } = treeSelection;
-    const selectedDescendants = treeQuery.data.getDescendants(node).filter(isItemSelected);
+    const selectedDescendants = treeQuery.data.getDescendants(node, true).filter(isItemSelected);
     const numVMs = getAvailableVMs(
       treeQuery.data,
       selectedDescendants,
@@ -150,24 +149,23 @@ const FilterVMsForm: React.FunctionComponent<IFilterVMsFormProps> = ({
             if (treeViewItem.id === 'converted-root') {
               treeSelection.selectAll(!treeSelection.areAllSelected);
             } else if (treeQuery.data) {
-              const matchingNode = findMatchingSelectableNode(
-                treeQuery.data,
-                treeViewItem.id || '',
-                isNodeSelectable
-              );
-              const isFullyChecked = isNodeFullyChecked(
-                treeQuery.data,
-                matchingNode,
-                treeSelection.isItemSelected,
-                isNodeSelectable
-              );
-              const nodesToSelect = findMatchingSelectableNodeAndDescendants(
-                treeQuery.data,
-                treeViewItem.id || '',
-                isNodeSelectable
-              );
-              if (nodesToSelect.length > 0) {
-                treeSelection.selectMultiple(nodesToSelect, !isFullyChecked);
+              const matchingPath = treeQuery.data.pathsBySelfLink[treeViewItem.id || ''];
+              if (matchingPath) {
+                const matchingNode = matchingPath[matchingPath.length - 1];
+                const isFullyChecked = isNodeFullyChecked(
+                  treeQuery.data,
+                  matchingNode,
+                  treeSelection.isItemSelected,
+                  isNodeSelectable
+                );
+                const nodesToSelect = findMatchingSelectableDescendants(
+                  treeQuery.data,
+                  matchingNode,
+                  isNodeSelectable
+                );
+                if (nodesToSelect.length > 0) {
+                  treeSelection.selectMultiple(nodesToSelect, !isFullyChecked);
+                }
               }
             }
           }}

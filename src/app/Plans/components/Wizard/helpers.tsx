@@ -244,8 +244,6 @@ const getAllVMChildren = (
   treeType: InventoryTreeType
 ): InventoryTree[] => {
   if (nodes.length === 0) return [];
-  const getDirectVMChildren = (node: InventoryTree): InventoryTree[] =>
-    (node.object && indexedTree.directVMChildrenBySelfLink[node.object.selfLink]) || [];
   return Array.from(
     new Set(
       nodes.flatMap((node) => {
@@ -254,10 +252,10 @@ const getAllVMChildren = (
           node.kind === 'Folder' ||
           (treeType === InventoryTreeType.VM && node.kind === 'Datacenter')
         ) {
-          return getDirectVMChildren(node);
+          return node.children?.filter((child) => child.kind === 'VM') || [];
         }
         // Otherwise, we might have VMs under hidden descendants like hosts
-        return indexedTree.getDescendants(node).flatMap(getDirectVMChildren);
+        return (node.object && indexedTree.vmDescendantsBySelfLink[node.object.selfLink]) || [];
       })
     )
   );

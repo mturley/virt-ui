@@ -23,7 +23,7 @@ export interface IndexedTree<T extends InventoryTree = InventoryTree> {
   vmSelfLinks: string[];
   pathsBySelfLink: Record<string, T[] | undefined>; // Flattened list of nodes leading to each node
   descendantsBySelfLink: Record<string, T[] | undefined>; // Flattened list of nodes under each node
-  directVMChildrenBySelfLink: Record<string, T[] | undefined>; // List of VM nodes directly under each node
+  vmDescendantsBySelfLink: Record<string, T[] | undefined>; // Flattened list of only VM nodes under each node
   getDescendants: (node: InventoryTree, includeNode?: boolean) => InventoryTree[];
 }
 
@@ -33,7 +33,7 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
   const vmSelfLinks: string[] = [];
   const pathsBySelfLink: Record<string, T[] | undefined> = {};
   const descendantsBySelfLink: Record<string, T[] | undefined> = {};
-  const directVMChildrenBySelfLink: Record<string, T[] | undefined> = {};
+  const vmDescendantsBySelfLink: Record<string, T[] | undefined> = {};
   const walk = (node: T, ancestors: T[] = []): T[] => {
     if (node.object) {
       flattenedNodes.push(node);
@@ -42,13 +42,16 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
     }
     if (node.children) {
       const children = node.children as T[];
-      const directVMChildren = children.filter((child) => child.kind === 'VM');
-      if (node.object) directVMChildrenBySelfLink[node.object.selfLink] = directVMChildren;
       const flattenedDescendants = children.flatMap((childNode) => [
         ...children,
         ...walk(childNode, [...ancestors, node]),
       ]);
-      if (node.object) descendantsBySelfLink[node.object.selfLink] = flattenedDescendants;
+      if (node.object) {
+        descendantsBySelfLink[node.object.selfLink] = flattenedDescendants;
+        vmDescendantsBySelfLink[node.object.selfLink] = flattenedDescendants.filter(
+          (node) => node.kind === 'VM'
+        );
+      }
       return flattenedDescendants;
     }
     return [];
@@ -59,7 +62,7 @@ const indexTree = <T extends InventoryTree>(tree: T): IndexedTree<T> => {
     vmSelfLinks,
     pathsBySelfLink,
     descendantsBySelfLink,
-    directVMChildrenBySelfLink,
+    vmDescendantsBySelfLink,
     getDescendants: (node: InventoryTree, includeNode = true) => {
       const descendants = descendantsBySelfLink[node.object?.selfLink || ''] || [];
       return includeNode ? [node, ...descendants] : descendants;
